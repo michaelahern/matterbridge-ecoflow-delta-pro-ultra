@@ -1,0 +1,59 @@
+{
+  "name": "matterbridge-ecoflow-delta-pro-ultra",
+  "displayName": "Matterbridge EcoFlow DELTA Pro Ultra",
+  "version": "0.1.0",
+  "description": "Matterbridge EcoFlow DELTA Pro Ultra Matterbridge Plugin",
+  "keywords": [
+    "ecoflow",
+    "matter",
+    "matter.js",
+    "matterbridge"
+  ],
+  "homepage": "https://github.com/michaelahern/matterbridge-ecoflow-delta-pro-ultra",
+  "bugs": {
+    "url": "http://github.com/michaelahern/matterbridge-ecoflow-delta-pro-ultra/issues"
+  },
+  "license": "ISC",
+  "author": "Michael Ahern <michael.ahern@gmail.com>",
+  "files": [
+    "./dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "default": "./dist/module.js",
+      "types": "./dist/module.d.ts"
+    }
+  },
+  "main": "./dist/module.js",
+  "types": "./dist/module.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/michaelahern/matterbridge-ecoflow-delta-pro-ultra.git"
+  },
+  "scripts": {
+    "build": "npm run lint && npm link matterbridge && tsc",
+    "clean": "rimraf ./dist",
+    "matterbridge": "matterbridge -bridge",
+    "lint": "eslint src/**/*.ts --max-warnings=0",
+    "lint-fix": "eslint src/**/*.ts --max-warnings=0 --fix",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {
+    "@ecoflow-api/rest-client": "0.1.0",
+    "mqtt": "~5.13",
+    "zod": "~3.25"
+  },
+  "devDependencies": {
+    "@stylistic/eslint-plugin": "^4",
+    "@types/node": "^20",
+    "eslint": "^9",
+    "rimraf": "^6",
+    "typescript": "~5.8",
+    "typescript-eslint": "^8"
+  },
+  "engines": {
+    "matterbridge": ">=3.0.4",
+    "node": ">=20"
+  }
+}
