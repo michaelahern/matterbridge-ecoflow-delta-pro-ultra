@@ -2,7 +2,7 @@
   "name": "matterbridge-ecoflow-delta-pro-ultra",
   "displayName": "Matterbridge EcoFlow DELTA Pro Ultra",
   "version": "0.1.0",
-  "description": "Matterbridge EcoFlow DELTA Pro Ultra Matterbridge Plugin",
+  "description": "EcoFlow DELTA Pro Ultra Matterbridge Plugin",
   "keywords": [
     "ecoflow",
     "matter",
