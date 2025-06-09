@@ -81,7 +81,11 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
 
             endpoint.addChildDeviceType('FromGrid', electricalSensor)
                 .createDefaultElectricalEnergyMeasurementClusterServer()
-                .createDefaultElectricalPowerMeasurementClusterServer(voltsIn ? voltsIn * 1000 : null, ampsIn ? ampsIn * 1000 : null, wattsIn ? wattsIn * 1000 : null, acInFreq ? acInFreq * 1000 : null)
+                .createDefaultElectricalPowerMeasurementClusterServer(
+                    voltsIn ? voltsIn * 1000 : null,
+                    ampsIn ? ampsIn * 1000 : null,
+                    wattsIn ? wattsIn * 1000 : null,
+                    acInFreq ? acInFreq * 1000 : null)
                 .createDefaultPowerTopologyClusterServer()
                 .addRequiredClusterServers();
 
