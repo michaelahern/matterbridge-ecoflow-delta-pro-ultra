@@ -1,0 +1,18 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22",
+  "updateContentCommand": {
+    "matterbridge-install": "npm install -g matterbridge",
+    "npm-install": "npm install"
+  },
+  "postStartCommand": {
+    "npm-build": "npm run build",
+    "npm-link": "npm link"
+  },
+  "portsAttributes": {
+    "8283": {
+      "label": "Matterbridge",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "forwardPorts": [8283]
+}
