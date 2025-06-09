@@ -47,7 +47,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 continue;
             }
 
-            const devicePropsResponse = await this.ecoflowRestClient.getDevicePropertiesPlain(devices.data[0].sn);
+            const devicePropsResponse = await this.ecoflowRestClient.getDevicePropertiesPlain(device.sn);
             const deviceProps = restAllQuotaData.parse(devicePropsResponse.data);
 
             this.log.info('Properties:', deviceProps);
