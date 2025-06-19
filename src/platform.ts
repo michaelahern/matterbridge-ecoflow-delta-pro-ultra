@@ -8,7 +8,7 @@ import mqtt from 'mqtt';
 import { mqttResponseBaseSchema, mqttResponseCmdId1Params, mqttResponseCmdId2Params, mqttResponseCmdId3Params, restAllQuotaData } from './schemas.js';
 
 export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
-    ecoflowRestClient: RestClient;
+    ecoflowRestClient?: RestClient;
     bridgedDevices = new Map<string, MatterbridgeEndpoint>();
     refreshSensorsInterval: NodeJS.Timeout | undefined;
 
@@ -40,6 +40,10 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
         await this.ready;
         await this.clearSelect();
 
+        if (!this.ecoflowRestClient) {
+            return;
+        }
+
         const devices = await this.ecoflowRestClient.getDevicesPlain();
 
         for (const device of devices.data) {
@@ -70,6 +74,8 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                     parseInt(this.matterbridge.matterbridgeVersion.replace(/\D/g, '')),
                     this.matterbridge.matterbridgeVersion)
                 .addRequiredClusterServers();
+
+            endpoint.name = `EcoFlow ${device.productName}`;
 
             endpoint.addChildDeviceType('Battery', powerSource, { tagList: [PowerSourceTag.Battery] })
                 .createDefaultPowerSourceRechargeableBatteryClusterServer(batteryLevel, PowerSource.BatChargeLevel.Ok, 102.4 * 1000)
@@ -103,7 +109,10 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
 
     override async onConfigure() {
         await super.onConfigure();
-        this.log.info('[onConfigure]');
+
+        if (!this.ecoflowRestClient) {
+            return;
+        }
 
         const mqttCreds = await this.ecoflowRestClient.getMqttCredentials();
         const mqttClient = await mqtt.connectAsync(`${mqttCreds.protocol}://${mqttCreds.url}:${mqttCreds.port}`, {
