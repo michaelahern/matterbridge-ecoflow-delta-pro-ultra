@@ -69,7 +69,15 @@ export const mqttResponseCmdId1Params = z.object({
 // param: { ... }
 // addr: 'hs_yj751_pd_backend_addr'
 export const mqttResponseCmdId2Params = z.object({
-    acOutFreq: z.number().int().optional()
+    acOutFreq: z.number().int().optional(),
+    batAmp: z.number().optional(),
+    batVol: z.number().optional(),
+    bmsInputWatts: z.number().optional(),
+    bmsOutputWatts: z.number().optional(),
+    inAc5p8Vol: z.number().optional(),
+    inAcC20Vol: z.number().optional(),
+    inHvMpptVol: z.number().optional(),
+    inLvMpptVol: z.number().optional()
 }).passthrough();
 
 // cmdId: 3
