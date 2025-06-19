@@ -1,0 +1,38 @@
+{
+  "title": "matterbridge-ecoflow-delta-pro-ultra",
+  "description": "matterbridge-ecoflow-delta-pro-ultra",
+  "type": "object",
+  "required": [],
+  "properties": {
+    "name": {
+      "description": "Plugin Name",
+      "type": "string",
+      "readOnly": true,
+      "ui:widget": "hidden"
+    },
+    "type": {
+      "description": "Plugin Type",
+      "type": "string",
+      "readOnly": true,
+      "ui:widget": "hidden"
+    },
+    "accessKey": {
+      "description": "EcoFlow Developer Access Key (defaults to ECOFLOW_ACCESS_KEY environment variable)",
+      "type": "string"
+    },
+    "secretKey": {
+      "description": "EcoFlow Developer Secret Key (defaults to ECOFLOW_SECRET_KEY environment variable)",
+      "type": "string"
+    },
+    "debug": {
+      "description": "Enable the debug for the plugin (development only)",
+      "type": "boolean",
+      "default": false
+    },
+    "unregisterOnShutdown": {
+      "description": "Unregister all devices on shutdown (development only)",
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
