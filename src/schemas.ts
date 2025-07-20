@@ -74,7 +74,9 @@ export const mqttResponseCmdId2Params = z.object({
     batVol: z.number().optional(),
     bmsInputWatts: z.number().optional(),
     bmsOutputWatts: z.number().optional(),
+    inAc5p8Amp: z.number().optional(),
     inAc5p8Vol: z.number().optional(),
+    inAcC20Amp: z.number().optional(),
     inAcC20Vol: z.number().optional(),
     inHvMpptVol: z.number().optional(),
     inLvMpptVol: z.number().optional()
