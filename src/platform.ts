@@ -58,11 +58,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
 
             const batteryLevel = deviceProps['hs_yj751_pd_appshow_addr.soc'];
             const acInFreq = deviceProps['hs_yj751_pd_backend_addr.acInFreq'] ?? 0;
-            const acInAmp = (deviceProps['hs_yj751_pd_backend_addr.inAc5p8Amp'] ?? 0) + (deviceProps['hs_yj751_pd_backend_addr.inAcC20Amp'] ?? 0);
-            const acInPwr = (deviceProps['hs_yj751_pd_appshow_addr.inAc5p8Pwr'] ?? 0) + (deviceProps['hs_yj751_pd_appshow_addr.inAcC20Pwr'] ?? 0);
-            const acInVol5p8 = deviceProps['hs_yj751_pd_backend_addr.inAc5p8Vol'] ?? 0;
-            const acInVolC20 = deviceProps['hs_yj751_pd_backend_addr.inAcC20Vol'] ?? 0;
-            const acInVol = acInVol5p8 > 0 && acInVolC20 > 0 ? (acInVol5p8 + acInVolC20) / 2 : (acInVol5p8 > 0 ? acInVol5p8 : acInVolC20);
+            const acOutFreq = deviceProps['hs_yj751_pd_backend_addr.acOutFreq'] ?? 0;
 
             const endpoint = new MatterbridgeEndpoint([batteryStorage, deviceEnergyManagement, bridgedNode], { id: 'EcoFlow-' + device.sn }, this.config.debug as boolean)
                 .createDefaultBridgedDeviceBasicInformationClusterServer(
@@ -96,19 +92,15 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
 
             endpoint.addChildDeviceType('ACInput', electricalSensor)
                 .createDefaultElectricalEnergyMeasurementClusterServer()
-                .createDefaultElectricalPowerMeasurementClusterServer(
-                    Math.round(acInVol * 1000),
-                    Math.round(acInAmp * 1000),
-                    Math.round(acInPwr * 1000),
-                    Math.round(acInFreq * 1000))
+                .createDefaultElectricalPowerMeasurementClusterServer(null, null, null, acInFreq * 1000)
                 .createDefaultPowerTopologyClusterServer()
                 .addRequiredClusterServers();
 
-            // endpoint.addChildDeviceType('ToOutlets', electricalSensor)
-            //     .createDefaultElectricalEnergyMeasurementClusterServer()
-            //     .createDefaultElectricalPowerMeasurementClusterServer(null, null, wattsOut * 1000, acOutFreq * 1000)
-            //     .createDefaultPowerTopologyClusterServer()
-            //     .addRequiredClusterServers();
+            endpoint.addChildDeviceType('ACOutput', electricalSensor)
+                .createDefaultElectricalEnergyMeasurementClusterServer()
+                .createDefaultElectricalPowerMeasurementClusterServer(null, null, null, acOutFreq * 1000)
+                .createDefaultPowerTopologyClusterServer()
+                .addRequiredClusterServers();
 
             this.setSelectDevice(device.sn, device.deviceName ?? 'DELTA Pro Ultra', undefined, 'hub');
             await this.registerDevice(endpoint);
@@ -147,6 +139,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
             // const solarPowerSourceEndpoint = endpoint.getChildEndpointByName('Solar');
 
             const acInputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACInput');
+            const acOutputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACOutput');
 
             const messageWrapper = mqttResponseBaseSchema.parse(JSON.parse(message.toString()));
             switch (messageWrapper.cmdId) {
@@ -184,9 +177,17 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                     // }
 
                     // AC Input Electrical Sensor: Power/Watts
-                    if (acInputElectricalSensorEndpoint && params.inAc5p8Pwr !== undefined && params.inAcC20Pwr !== undefined) {
-                        const acInPwr_mW = Math.round((params.inAc5p8Pwr + params.inAcC20Pwr) * 1000);
+                    if (acInputElectricalSensorEndpoint && (params.inAc5p8Pwr !== undefined || params.inAcC20Pwr !== undefined)) {
+                        const acInPwr_mW = Math.round(((params.inAc5p8Pwr ?? 0) + (params.inAcC20Pwr ?? 0)) * 1000);
                         await acInputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', acInPwr_mW, endpoint.log);
+                    }
+
+                    // AC Output Electrical Sensor: Power/Watts
+                    if (acOutputElectricalSensorEndpoint && (params.outAc5p8Pwr !== undefined || params.outAcL11Pwr !== undefined || params.outAcL12Pwr !== undefined
+                        || params.outAcL14Pwr !== undefined || params.outAcL21Pwr !== undefined || params.outAcL22Pwr !== undefined || params.outAcTtPwr !== undefined)) {
+                        const acOutPwr_mW = Math.round(((params.outAc5p8Pwr ?? 0) + (params.outAcL11Pwr ?? 0) + (params.outAcL12Pwr ?? 0)
+                            + (params.outAcL14Pwr ?? 0) + (params.outAcL21Pwr ?? 0) + (params.outAcL22Pwr ?? 0) + (params.outAcTtPwr ?? 0)) * 1000);
+                        await acOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', acOutPwr_mW, endpoint.log);
                     }
 
                     break;
