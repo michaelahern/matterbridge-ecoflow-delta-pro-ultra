@@ -1,6 +1,0 @@
-{
-  "name": "matterbridge-ecoflow-delta-pro-ultra",
-  "type": "DynamicPlatform",
-  "debug": false,
-  "unregisterOnShutdown": false
-}

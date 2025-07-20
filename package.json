@@ -16,7 +16,8 @@
   "license": "ISC",
   "author": "Michael Ahern <michael.ahern@gmail.com>",
   "files": [
-    "./dist"
+    "./dist",
+    "./matterbridge-ecoflow-delta-pro-ultra.schema.json"
   ],
   "type": "module",
   "exports": {
@@ -34,9 +35,9 @@
   "scripts": {
     "build": "npm run lint && npm link matterbridge && tsc",
     "clean": "rimraf ./dist",
-    "matterbridge": "matterbridge -bridge",
-    "lint": "eslint src/**/*.ts --max-warnings=0",
-    "lint-fix": "eslint src/**/*.ts --max-warnings=0 --fix",
+    "matterbridge": "matterbridge -add matterbridge-ecoflow-delta-pro-ultra && matterbridge -bridge",
+    "lint": "eslint --max-warnings=0",
+    "lint-fix": "eslint --max-warnings=0 --fix",
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
@@ -45,9 +46,13 @@
     "zod": "~3.25"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^4",
+    "@eslint/json": "^0",
+    "@eslint/markdown": "^6",
+    "@stylistic/eslint-plugin": "^5",
     "@types/node": "^20",
     "eslint": "^9",
+    "eslint-plugin-jsonc": "^2",
+    "eslint-plugin-yml": "^1",
     "rimraf": "^6",
     "typescript": "~5.8",
     "typescript-eslint": "^8"
