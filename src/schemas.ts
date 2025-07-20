@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod/v3';
 
 export const mqttResponseBaseSchema = z.object({
     cmdId: z.number().int(),
