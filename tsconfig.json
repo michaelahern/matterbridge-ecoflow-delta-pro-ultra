@@ -9,7 +9,10 @@
     "declaration": true,
     "declarationMap": true,
     "strict": true,
+    "verbatimModuleSyntax": true,
     "skipLibCheck": true
   },
-  "include": ["./src/**/*"]
+  "include": [
+    "./src/**/*"
+  ]
 }
