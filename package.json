@@ -43,7 +43,7 @@
   "dependencies": {
     "@ecoflow-api/rest-client": "0.1.0",
     "mqtt": "~5.13",
-    "zod": "~3.25"
+    "zod": "~4.0"
   },
   "devDependencies": {
     "@eslint/json": "^0",
