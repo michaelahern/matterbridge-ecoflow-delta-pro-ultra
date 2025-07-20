@@ -1,5 +1,5 @@
 import { RestClient } from '@ecoflow-api/rest-client';
-import { Matterbridge, MatterbridgeEndpoint, MatterbridgeDynamicPlatform, PlatformConfig, batteryStorage, bridgedNode, powerSource } from 'matterbridge';
+import { Matterbridge, MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, batteryStorage, bridgedNode, powerSource } from 'matterbridge';
 import { PowerSource } from 'matterbridge/matter/clusters';
 import { AnsiLogger } from 'matterbridge/logger';
 import { PowerSourceTag } from 'matterbridge/matter';
