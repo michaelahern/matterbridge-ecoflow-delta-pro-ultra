@@ -122,19 +122,27 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 .addRequiredClusterServers();
 
             dcSwitch.addCommandHandler('on', async () => {
-                this.ecoflowRestClient?.setCommandPlain({
-                    sn: device.sn,
-                    cmdCode: 'YJ751_PD_DC_SWITCH_SET',
-                    params: { enable: 1 }
-                });
+                try {
+                    this.ecoflowRestClient?.setCommandPlain({
+                        sn: device.sn,
+                        cmdCode: 'YJ751_PD_DC_SWITCH_SET',
+                        params: { enable: 1 }
+                    });
+                } catch (error) {
+                    this.log.error('Failed to execute DC switch ON command:', error);
+                }
             });
 
             dcSwitch.addCommandHandler('off', async () => {
-                this.ecoflowRestClient?.setCommandPlain({
-                    sn: device.sn,
-                    cmdCode: 'YJ751_PD_DC_SWITCH_SET',
-                    params: { enable: 0 }
-                });
+                try {
+                    this.ecoflowRestClient?.setCommandPlain({
+                        sn: device.sn,
+                        cmdCode: 'YJ751_PD_DC_SWITCH_SET',
+                        params: { enable: 0 }
+                    });
+                } catch (error) {
+                    this.log.error('Failed to execute DC switch OFF command:', error);
+                }
             });
 
             await this.registerDevice(endpoint);
