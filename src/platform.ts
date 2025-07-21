@@ -128,7 +128,8 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                         cmdCode: 'YJ751_PD_DC_SWITCH_SET',
                         params: { enable: 1 }
                     });
-                } catch (error) {
+                }
+                catch (error) {
                     this.log.error('Failed to execute DC switch ON command:', error);
                 }
             });
@@ -140,7 +141,8 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                         cmdCode: 'YJ751_PD_DC_SWITCH_SET',
                         params: { enable: 0 }
                     });
-                } catch (error) {
+                }
+                catch (error) {
                     this.log.error('Failed to execute DC switch OFF command:', error);
                 }
             });
