@@ -98,9 +98,10 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 .addRequiredClusterServers();
 
             endpoint.addChildDeviceType('ACSwitch', onOffSwitch)
-                .createDefaultOnOffClusterServer()
+                .createDefaultOnOffClusterServer() // TODO: Initial State
                 .addRequiredClusterServers();
 
+            // TODO
             // acSwitch.addCommandHandler('on', async () => {
             //     this.ecoflowRestClient?.setCommandPlain({
             //         sn: device.sn,
@@ -118,7 +119,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
             // });
 
             const dcSwitch = endpoint.addChildDeviceType('DCSwitch', onOffSwitch)
-                .createDefaultOnOffClusterServer()
+                .createDefaultOnOffClusterServer() // TODO: Initial State
                 .addRequiredClusterServers();
 
             dcSwitch.addCommandHandler('on', async () => {
