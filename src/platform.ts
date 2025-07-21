@@ -9,7 +9,7 @@ import { mqttResponseBaseSchema, mqttResponseCmdId1Params, mqttResponseCmdId2Par
 
 export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
     ecoflowRestClient?: RestClient;
-    bridgedDevices = new Map<string, MatterbridgeEndpoint>();
+    batteryStorageDevices = new Map<string, MatterbridgeEndpoint>();
     refreshSensorsInterval: NodeJS.Timeout | undefined;
 
     constructor(matterbridge: Matterbridge, log: AnsiLogger, config: PlatformConfig) {
@@ -85,11 +85,6 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 .createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac)
                 .addRequiredClusterServers();
 
-            // TODO: Move to SolarPower Endpoint
-            // endpoint.addChildDeviceType('Solar', powerSource, { tagList: [PowerSourceTag.Solar] })
-            //     .createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Dc)
-            //     .addRequiredClusterServers();
-
             endpoint.addChildDeviceType('ACInput', electricalSensor)
                 .createDefaultElectricalEnergyMeasurementClusterServer()
                 .createDefaultElectricalPowerMeasurementClusterServer(null, null, null, acInFreq * 1000)
@@ -106,13 +101,45 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 .createDefaultOnOffClusterServer()
                 .addRequiredClusterServers();
 
-            endpoint.addChildDeviceType('DCSwitch', onOffSwitch)
+            // acSwitch.addCommandHandler('on', async () => {
+            //     this.ecoflowRestClient?.setCommandPlain({
+            //         sn: device.sn,
+            //         cmdCode: 'YJ751_PD_AC_DSG_SET',
+            //         params: { enable: 1 }
+            //     });
+            // });
+
+            // acSwitch.addCommandHandler('off', async () => {
+            //     this.ecoflowRestClient?.setCommandPlain({
+            //         sn: device.sn,
+            //         cmdCode: 'YJ751_PD_AC_DSG_SET',
+            //         params: { enable: 0 }
+            //     });
+            // });
+
+            const dcSwitch = endpoint.addChildDeviceType('DCSwitch', onOffSwitch)
                 .createDefaultOnOffClusterServer()
                 .addRequiredClusterServers();
 
-            this.setSelectDevice(device.sn, device.deviceName ?? 'DELTA Pro Ultra', 'https://developer.ecoflow.com/', 'hub');
+            dcSwitch.addCommandHandler('on', async () => {
+                this.ecoflowRestClient?.setCommandPlain({
+                    sn: device.sn,
+                    cmdCode: 'YJ751_PD_DC_SWITCH_SET',
+                    params: { enable: 1 }
+                });
+            });
+
+            dcSwitch.addCommandHandler('off', async () => {
+                this.ecoflowRestClient?.setCommandPlain({
+                    sn: device.sn,
+                    cmdCode: 'YJ751_PD_DC_SWITCH_SET',
+                    params: { enable: 0 }
+                });
+            });
+
             await this.registerDevice(endpoint);
-            this.bridgedDevices.set(device.sn, endpoint);
+            this.batteryStorageDevices.set(device.sn, endpoint);
+            this.setSelectDevice(device.sn, device.deviceName ?? 'DELTA Pro Ultra', 'https://developer.ecoflow.com/', 'hub');
         }
     }
 
@@ -130,21 +157,20 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
             protocolVersion: 5
         });
 
-        for (const deviceSerialNumber of this.bridgedDevices.keys()) {
+        for (const deviceSerialNumber of this.batteryStorageDevices.keys()) {
             await mqttClient.subscribeAsync(`/open/${mqttCreds.certificateAccount}/${deviceSerialNumber}/quota`);
             await mqttClient.subscribeAsync(`/open/${mqttCreds.certificateAccount}/${deviceSerialNumber}/status`);
         }
 
         mqttClient.on('message', async (topic, message) => {
             const serialNumber = topic.split('/')[3];
-            const endpoint = this.bridgedDevices.get(serialNumber);
+            const endpoint = this.batteryStorageDevices.get(serialNumber);
             if (!endpoint) {
                 return;
             }
 
             const batteryPowerSourceEndpoint = endpoint.getChildEndpointByName('Battery');
             const gridPowerSourceEndpoint = endpoint.getChildEndpointByName('Grid');
-            // const solarPowerSourceEndpoint = endpoint.getChildEndpointByName('Solar');
 
             const acInputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACInput');
             const acOutputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACOutput');
@@ -180,12 +206,6 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                         const powerSourceStatus = params.inAc5p8Pwr > 0 || params.inAcC20Pwr > 0 ? PowerSource.PowerSourceStatus.Active : PowerSource.PowerSourceStatus.Standby;
                         await gridPowerSourceEndpoint.setAttribute(PowerSource.Cluster.id, 'status', powerSourceStatus, endpoint.log);
                     }
-
-                    // Solar Power Source: Status
-                    // if (solarPowerSourceEndpoint && params.inHvMpptPwr !== undefined && params.inLvMpptPwr !== undefined) {
-                    //     const powerSourceStatus = params.inHvMpptPwr > 0 || params.inLvMpptPwr > 0 ? PowerSource.PowerSourceStatus.Active : PowerSource.PowerSourceStatus.Standby;
-                    //     await solarPowerSourceEndpoint.setAttribute(PowerSource.Cluster.id, 'status', powerSourceStatus, endpoint.log);
-                    // }
 
                     // AC Input Electrical Sensor: Power/Watts
                     if (acInputElectricalSensorEndpoint && (params.inAc5p8Pwr !== undefined || params.inAcC20Pwr !== undefined)) {
