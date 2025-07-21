@@ -1,6 +1,6 @@
 import { RestClient } from '@ecoflow-api/rest-client';
-import { Matterbridge, MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, batteryStorage, bridgedNode, deviceEnergyManagement, electricalSensor, powerSource } from 'matterbridge';
-import { DeviceEnergyManagement, ElectricalPowerMeasurement, PowerSource } from 'matterbridge/matter/clusters';
+import { Matterbridge, MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, batteryStorage, bridgedNode, deviceEnergyManagement, electricalSensor, onOffSwitch, powerSource } from 'matterbridge';
+import { DeviceEnergyManagement, ElectricalPowerMeasurement, OnOff, PowerSource } from 'matterbridge/matter/clusters';
 import { AnsiLogger } from 'matterbridge/logger';
 import { PowerSourceTag } from 'matterbridge/matter';
 import mqtt from 'mqtt';
@@ -102,7 +102,15 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 .createDefaultPowerTopologyClusterServer()
                 .addRequiredClusterServers();
 
-            this.setSelectDevice(device.sn, device.deviceName ?? 'DELTA Pro Ultra', undefined, 'hub');
+            endpoint.addChildDeviceType('ACSwitch', onOffSwitch)
+                .createDefaultOnOffClusterServer()
+                .addRequiredClusterServers();
+
+            endpoint.addChildDeviceType('DCSwitch', onOffSwitch)
+                .createDefaultOnOffClusterServer()
+                .addRequiredClusterServers();
+
+            this.setSelectDevice(device.sn, device.deviceName ?? 'DELTA Pro Ultra', 'https://developer.ecoflow.com/', 'hub');
             await this.registerDevice(endpoint);
             this.bridgedDevices.set(device.sn, endpoint);
         }
@@ -140,6 +148,9 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
 
             const acInputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACInput');
             const acOutputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACOutput');
+
+            const acSwitchOnOffSwitchEndpoint = endpoint.getChildEndpointByName('ACSwitch');
+            const dcSwitchOnOffSwitchEndpoint = endpoint.getChildEndpointByName('DCSwitch');
 
             const messageWrapper = mqttResponseBaseSchema.parse(JSON.parse(message.toString()));
             switch (messageWrapper.cmdId) {
@@ -188,6 +199,18 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                         const acOutPwr_mW = Math.round(((params.outAc5p8Pwr ?? 0) + (params.outAcL11Pwr ?? 0) + (params.outAcL12Pwr ?? 0)
                             + (params.outAcL14Pwr ?? 0) + (params.outAcL21Pwr ?? 0) + (params.outAcL22Pwr ?? 0) + (params.outAcTtPwr ?? 0)) * 1000);
                         await acOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', acOutPwr_mW, endpoint.log);
+                    }
+
+                    // AC On Off Switch
+                    if (acSwitchOnOffSwitchEndpoint && params.showFlag !== undefined) {
+                        const isOn = (params.showFlag & 0x04) !== 0;
+                        await acSwitchOnOffSwitchEndpoint.setAttribute(OnOff.Cluster.id, 'onOff', isOn, endpoint.log);
+                    }
+
+                    // DC On Off Switch
+                    if (dcSwitchOnOffSwitchEndpoint && params.showFlag !== undefined) {
+                        const isOn = (params.showFlag & 0x02) !== 0;
+                        await dcSwitchOnOffSwitchEndpoint.setAttribute(OnOff.Cluster.id, 'onOff', isOn, endpoint.log);
                     }
 
                     break;
