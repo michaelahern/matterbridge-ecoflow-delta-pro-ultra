@@ -27,17 +27,19 @@ This plugin attempts to implement a Battery Storage device type for the EcoFlow 
 
 ### [Apple Home](https://support.apple.com/en-us/102135)
 
-Supported Functionality: AC & DC On/Off Outlets, Battery Status
+Supported Functionality: AC & DC Outlets On/Off, Battery Status
 
 ![Apple Home: AC & DC On/Off Outlets](./docs/apple1.png) ![Apple Home: Battery Status](./docs/apple2.png)
 
-### [Home Assistant](https://www.home-assistant.io/)
-
-Supported Functionality: AC & DC On/Off Outlets, Battery Status
-
 ### [Amazon Alexa](https://developer.amazon.com/en-US/docs/alexa/smarthome/matter-support.html)
 
-Unknown
+Supported Functionality: AC & DC Outlets On/Off
+
+![Amazon Alexa: AC & DC On/Off Outlets](./docs/amazon1.png)
+
+### [Home Assistant](https://www.home-assistant.io/)
+
+Supported Functionality: AC & DC Outlets On/Off, Battery Status
 
 ### [Google Home](https://developers.home.google.com/matter/supported-devices)
 
