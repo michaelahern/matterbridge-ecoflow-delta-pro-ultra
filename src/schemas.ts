@@ -79,7 +79,31 @@ export const mqttResponseCmdId2Params = z.object({
     inAcC20Amp: z.number().optional(),
     inAcC20Vol: z.number().optional(),
     inHvMpptVol: z.number().optional(),
-    inLvMpptVol: z.number().optional()
+    inLvMpptVol: z.number().optional(),
+    outAc5p8Amp: z.number().optional(),
+    outAc5p8Vol: z.number().optional(),
+    outAcL11Amp: z.number().optional(),
+    outAcL11Vol: z.number().optional(),
+    outAcL12Amp: z.number().optional(),
+    outAcL12Vol: z.number().optional(),
+    outAcL14Amp: z.number().optional(),
+    outAcL14Vol: z.number().optional(),
+    outAcL21Amp: z.number().optional(),
+    outAcL21Vol: z.number().optional(),
+    outAcL22Amp: z.number().optional(),
+    outAcL22Vol: z.number().optional(),
+    outAcTtAmp: z.number().optional(),
+    outAcTtVol: z.number().optional(),
+    outAdsAmp: z.number().optional(),
+    outAdsVol: z.number().optional(),
+    outTypec1Amp: z.number().optional(),
+    outTypec1Vol: z.number().optional(),
+    outTypec2Amp: z.number().optional(),
+    outTypec2Vol: z.number().optional(),
+    outUsb1Amp: z.number().optional(),
+    outUsb1Vol: z.number().optional(),
+    outUsb2Amp: z.number().optional(),
+    outUsb2Vol: z.number().optional()
 }).passthrough();
 
 // cmdId: 3
