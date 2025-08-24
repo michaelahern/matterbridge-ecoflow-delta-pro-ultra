@@ -2,7 +2,10 @@
   "title": "matterbridge-ecoflow-delta-pro-ultra",
   "description": "matterbridge-ecoflow-delta-pro-ultra",
   "type": "object",
-  "required": [],
+  "required": [
+    "accessKey",
+    "secretKey"
+  ],
   "properties": {
     "name": {
       "description": "Plugin Name",
@@ -32,7 +35,8 @@
     "unregisterOnShutdown": {
       "description": "Unregister all devices on shutdown (development only)",
       "type": "boolean",
-      "default": false
+      "default": false,
+      "ui:widget": "hidden"
     }
   }
 }

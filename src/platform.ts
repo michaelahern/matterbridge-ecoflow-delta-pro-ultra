@@ -180,7 +180,10 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
         }
 
         const mqttCreds = await this.ecoflowRestClient.getMqttCredentials();
-        const mqttClient = await mqtt.connectAsync(`${mqttCreds.protocol}://${mqttCreds.url}:${mqttCreds.port}`, {
+        const mqttBroker = `${mqttCreds.protocol}://${mqttCreds.url}:${mqttCreds.port}`;
+
+        this.log.info('Connecting to EcoFlow MQTT Broker:', mqttBroker);
+        const mqttClient = await mqtt.connectAsync(mqttBroker, {
             username: `${mqttCreds.certificateAccount}`,
             password: `${mqttCreds.certificatePassword}`,
             protocolVersion: 5
