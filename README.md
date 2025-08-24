@@ -29,6 +29,8 @@ This plugin attempts to implement a Battery Storage device type for the EcoFlow 
 
 Supported Functionality: AC & DC On/Off Switches, Battery Status
 
+![Apple Home: AC & DC On/Off Switches](./docs/apple1.png) ![Apple Home: Battery Status](./docs/apple2.png)
+
 ### Amazon Alexa
 
 TBD
