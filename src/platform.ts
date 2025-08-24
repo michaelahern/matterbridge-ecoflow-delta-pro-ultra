@@ -193,6 +193,10 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
 
         mqttClient.on('message', async (topic, message) => {
             const serialNumber = topic.split('/')[3];
+            if (!serialNumber) {
+                return;
+            }
+
             const endpoint = this.batteryStorageDevices.get(serialNumber);
             if (!endpoint) {
                 return;
@@ -238,33 +242,35 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                     }
 
                     // Electrical Sensor: Power/Watts
-                    // Note: Handle Partial Messages
-                    //  * Remain Time Only { remainTime: 10363 }
-                    //  * Active Ports Only { outUsb1Pwr: 8.956857, remainTime: 10366, showFlag: 2322, wattsOutSum: 9 }
-                    if (params.inAc5p8Pwr !== undefined || params.inAcC20Pwr !== undefined
-                        || params.outAc5p8Pwr !== undefined || params.outAcL11Pwr !== undefined || params.outAcL12Pwr !== undefined
-                        || params.outAcL14Pwr !== undefined || params.outAcL21Pwr !== undefined || params.outAcL22Pwr !== undefined || params.outAcTtPwr !== undefined
-                        || params.outAdsPwr !== undefined || params.outTypec1Pwr !== undefined || params.outTypec2Pwr !== undefined
-                        || params.outUsb1Pwr !== undefined || params.outUsb2Pwr !== undefined) {
-                        // AC Input Electrical Sensor: Power/Watts
-                        if (acInputElectricalSensorEndpoint) {
-                            const acInPwr_mW = Math.round(((params.inAc5p8Pwr ?? 0) + (params.inAcC20Pwr ?? 0)) * 1000);
-                            await acInputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', acInPwr_mW, endpoint.log);
-                        }
+                    // Partial Messages
+                    //  - { remainTime: 10363 }
+                    //  - { wattsOutSum: 9 }
 
-                        // AC Output Electrical Sensor: Power/Watts
-                        if (acOutputElectricalSensorEndpoint) {
-                            const acOutPwr_mW = Math.round(((params.outAc5p8Pwr ?? 0) + (params.outAcL11Pwr ?? 0) + (params.outAcL12Pwr ?? 0)
-                                + (params.outAcL14Pwr ?? 0) + (params.outAcL21Pwr ?? 0) + (params.outAcL22Pwr ?? 0) + (params.outAcTtPwr ?? 0)) * 1000);
-                            await acOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', acOutPwr_mW, endpoint.log);
-                        }
+                    // AC Input Electrical Sensor: Power/Watts
+                    // Partial Messages
+                    //  - { inAcC20Pwr: 1214.2208, wattsInSum: 1214, wattsOutSum: 10 }
+                    //  - { inAcC20Pwr: 1206.6578, remainTime: 9, wattsInSum: 1207 }
+                    if (acInputElectricalSensorEndpoint && (params.inAc5p8Pwr !== undefined || params.inAcC20Pwr !== undefined)) {
+                        const acInPwr_mW = Math.round(((params.inAc5p8Pwr ?? 0) + (params.inAcC20Pwr ?? 0)) * 1000);
+                        await acInputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', acInPwr_mW, endpoint.log);
+                    }
 
-                        // DC Output Electrical Sensor: Power/Watts
-                        if (dcOutputElectricalSensorEndpoint) {
-                            const dcOutPwr_mW = Math.round(((params.outAdsPwr ?? 0) + (params.outTypec1Pwr ?? 0) + (params.outTypec2Pwr ?? 0)
-                                + (params.outUsb1Pwr ?? 0) + (params.outUsb2Pwr ?? 0)) * 1000);
-                            await dcOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', dcOutPwr_mW, endpoint.log);
-                        }
+                    // AC Output Electrical Sensor: Power/Watts
+                    if (acOutputElectricalSensorEndpoint && (params.outAc5p8Pwr !== undefined || params.outAcL11Pwr !== undefined || params.outAcL12Pwr !== undefined
+                        || params.outAcL14Pwr !== undefined || params.outAcL21Pwr !== undefined || params.outAcL22Pwr !== undefined || params.outAcTtPwr !== undefined)) {
+                        const acOutPwr_mW = Math.round(((params.outAc5p8Pwr ?? 0) + (params.outAcL11Pwr ?? 0) + (params.outAcL12Pwr ?? 0)
+                            + (params.outAcL14Pwr ?? 0) + (params.outAcL21Pwr ?? 0) + (params.outAcL22Pwr ?? 0) + (params.outAcTtPwr ?? 0)) * 1000);
+                        await acOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', acOutPwr_mW, endpoint.log);
+                    }
+
+                    // DC Output Electrical Sensor: Power/Watts
+                    // Partial Messages
+                    //  - { outUsb1Pwr: 8.956857, remainTime: 10366, wattsOutSum: 9 }
+                    if (dcOutputElectricalSensorEndpoint && (params.outAdsPwr !== undefined || params.outTypec1Pwr !== undefined
+                        || params.outTypec2Pwr !== undefined || params.outUsb1Pwr !== undefined || params.outUsb2Pwr !== undefined)) {
+                        const dcOutPwr_mW = Math.round(((params.outAdsPwr ?? 0) + (params.outTypec1Pwr ?? 0) + (params.outTypec2Pwr ?? 0)
+                            + (params.outUsb1Pwr ?? 0) + (params.outUsb2Pwr ?? 0)) * 1000);
+                        await dcOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', dcOutPwr_mW, endpoint.log);
                     }
 
                     // AC On/Off Switch
