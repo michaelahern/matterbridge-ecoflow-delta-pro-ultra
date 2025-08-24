@@ -1,5 +1,5 @@
 import { RestClient } from '@ecoflow-api/rest-client';
-import { Matterbridge, MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, batteryStorage, bridgedNode, deviceEnergyManagement, electricalSensor, onOffSwitch, powerSource } from 'matterbridge';
+import { Matterbridge, MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, batteryStorage, deviceEnergyManagement, electricalSensor, onOffSwitch, powerSource } from 'matterbridge';
 import { DeviceEnergyManagement, ElectricalPowerMeasurement, OnOff, PowerSource } from 'matterbridge/matter/clusters';
 import { AnsiLogger } from 'matterbridge/logger';
 import { PowerSourceTag } from 'matterbridge/matter';
@@ -10,7 +10,6 @@ import { mqttResponseBaseSchema, mqttResponseCmdId1Params, mqttResponseCmdId2Par
 export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
     ecoflowRestClient?: RestClient;
     batteryStorageDevices = new Map<string, MatterbridgeEndpoint>();
-    refreshSensorsInterval: NodeJS.Timeout | undefined;
 
     constructor(matterbridge: Matterbridge, log: AnsiLogger, config: PlatformConfig) {
         super(matterbridge, log, config);
@@ -60,7 +59,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
             const acInFreq = deviceProps['hs_yj751_pd_backend_addr.acInFreq'] ?? 0;
             const acOutFreq = deviceProps['hs_yj751_pd_backend_addr.acOutFreq'] ?? 0;
 
-            const endpoint = new MatterbridgeEndpoint([batteryStorage, deviceEnergyManagement, bridgedNode], { id: 'EcoFlow-' + device.sn }, this.config.debug as boolean)
+            const endpoint = new MatterbridgeEndpoint([batteryStorage, deviceEnergyManagement], { id: 'EcoFlow-' + device.sn }, this.config.debug as boolean)
                 .createDefaultBridgedDeviceBasicInformationClusterServer(
                     device.deviceName ?? 'DELTA Pro Ultra',
                     device.sn,
@@ -75,16 +74,18 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 .createDefaultDeviceEnergyManagementModeClusterServer()
                 .addRequiredClusterServers();
 
-            endpoint.name = `EcoFlow ${device.productName}`;
+            endpoint.name = 'EcoFlow DELTA Pro Ultra';
 
+            // Battery & Grid Power Sources
             endpoint.addChildDeviceType('Battery', powerSource, { tagList: [PowerSourceTag.Battery] })
-                .createDefaultPowerSourceRechargeableBatteryClusterServer(batteryLevel, PowerSource.BatChargeLevel.Ok, 102.4 * 1000)
+                .createDefaultPowerSourceRechargeableBatteryClusterServer(batteryLevel, PowerSource.BatChargeLevel.Ok, 102_400)
                 .addRequiredClusterServers();
 
             endpoint.addChildDeviceType('Grid', powerSource, { tagList: [PowerSourceTag.Grid] })
                 .createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac)
                 .addRequiredClusterServers();
 
+            // AC Input, AC Output, & DC Output Power Measurement
             endpoint.addChildDeviceType('ACInput', electricalSensor)
                 .createDefaultElectricalEnergyMeasurementClusterServer()
                 .createDefaultElectricalPowerMeasurementClusterServer(null, null, null, acInFreq * 1000)
@@ -97,26 +98,44 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 .createDefaultPowerTopologyClusterServer()
                 .addRequiredClusterServers();
 
-            endpoint.addChildDeviceType('ACSwitch', onOffSwitch)
+            endpoint.addChildDeviceType('DCOutput', electricalSensor)
+                .createDefaultElectricalEnergyMeasurementClusterServer()
+                .createDefaultElectricalPowerMeasurementClusterServer(null, null, null, null)
+                .createDefaultPowerTopologyClusterServer()
+                .addRequiredClusterServers();
+
+            // AC On/Off Switch
+            const acSwitch = endpoint.addChildDeviceType('ACSwitch', onOffSwitch)
                 .createDefaultOnOffClusterServer()
                 .addRequiredClusterServers();
 
-            // acSwitch.addCommandHandler('on', async () => {
-            //     this.ecoflowRestClient?.setCommandPlain({
-            //         sn: device.sn,
-            //         cmdCode: 'YJ751_PD_AC_DSG_SET',
-            //         params: { enable: 1 }
-            //     });
-            // });
+            acSwitch.addCommandHandler('on', async () => {
+                try {
+                    this.ecoflowRestClient?.setCommandPlain({
+                        sn: device.sn,
+                        cmdCode: 'YJ751_PD_AC_DSG_SET',
+                        params: { enable: 1 }
+                    });
+                }
+                catch (error) {
+                    this.log.error('Error executing AC Switch command [On]:', error);
+                }
+            });
 
-            // acSwitch.addCommandHandler('off', async () => {
-            //     this.ecoflowRestClient?.setCommandPlain({
-            //         sn: device.sn,
-            //         cmdCode: 'YJ751_PD_AC_DSG_SET',
-            //         params: { enable: 0 }
-            //     });
-            // });
+            acSwitch.addCommandHandler('off', async () => {
+                try {
+                    this.ecoflowRestClient?.setCommandPlain({
+                        sn: device.sn,
+                        cmdCode: 'YJ751_PD_AC_DSG_SET',
+                        params: { enable: 0 }
+                    });
+                }
+                catch (error) {
+                    this.log.error('Error executing AC Switch command [Off]:', error);
+                }
+            });
 
+            // DC On/Off Switch
             const dcSwitch = endpoint.addChildDeviceType('DCSwitch', onOffSwitch)
                 .createDefaultOnOffClusterServer()
                 .addRequiredClusterServers();
@@ -130,7 +149,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                     });
                 }
                 catch (error) {
-                    this.log.error('Failed to execute DC switch ON command:', error);
+                    this.log.error('Error executing DC Switch command [On]:', error);
                 }
             });
 
@@ -143,7 +162,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                     });
                 }
                 catch (error) {
-                    this.log.error('Failed to execute DC switch OFF command:', error);
+                    this.log.error('Error executing DC Switch command [Off]:', error);
                 }
             });
 
@@ -161,7 +180,10 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
         }
 
         const mqttCreds = await this.ecoflowRestClient.getMqttCredentials();
-        const mqttClient = await mqtt.connectAsync(`${mqttCreds.protocol}://${mqttCreds.url}:${mqttCreds.port}`, {
+        const mqttBroker = `${mqttCreds.protocol}://${mqttCreds.url}:${mqttCreds.port}`;
+
+        this.log.info('Connecting to EcoFlow MQTT Broker:', mqttBroker);
+        const mqttClient = await mqtt.connectAsync(mqttBroker, {
             username: `${mqttCreds.certificateAccount}`,
             password: `${mqttCreds.certificatePassword}`,
             protocolVersion: 5
@@ -174,6 +196,10 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
 
         mqttClient.on('message', async (topic, message) => {
             const serialNumber = topic.split('/')[3];
+            if (!serialNumber) {
+                return;
+            }
+
             const endpoint = this.batteryStorageDevices.get(serialNumber);
             if (!endpoint) {
                 return;
@@ -184,6 +210,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
 
             const acInputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACInput');
             const acOutputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACOutput');
+            const dcOutputElectricalSensorEndpoint = endpoint.getChildEndpointByName('DCOutput');
 
             const acSwitchOnOffSwitchEndpoint = endpoint.getChildEndpointByName('ACSwitch');
             const dcSwitchOnOffSwitchEndpoint = endpoint.getChildEndpointByName('DCSwitch');
@@ -217,7 +244,15 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                         await gridPowerSourceEndpoint.setAttribute(PowerSource.Cluster.id, 'status', powerSourceStatus, endpoint.log);
                     }
 
+                    // Electrical Sensor: Power/Watts
+                    // Partial Messages
+                    //  - { remainTime: 10363 }
+                    //  - { wattsOutSum: 9 }
+
                     // AC Input Electrical Sensor: Power/Watts
+                    // Partial Messages
+                    //  - { inAcC20Pwr: 1214.2208, wattsInSum: 1214, wattsOutSum: 10 }
+                    //  - { inAcC20Pwr: 1206.6578, remainTime: 9, wattsInSum: 1207 }
                     if (acInputElectricalSensorEndpoint && (params.inAc5p8Pwr !== undefined || params.inAcC20Pwr !== undefined)) {
                         const acInPwr_mW = Math.round(((params.inAc5p8Pwr ?? 0) + (params.inAcC20Pwr ?? 0)) * 1000);
                         await acInputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', acInPwr_mW, endpoint.log);
@@ -231,13 +266,23 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                         await acOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', acOutPwr_mW, endpoint.log);
                     }
 
-                    // AC On Off Switch
+                    // DC Output Electrical Sensor: Power/Watts
+                    // Partial Messages
+                    //  - { outUsb1Pwr: 8.956857, remainTime: 10366, wattsOutSum: 9 }
+                    if (dcOutputElectricalSensorEndpoint && (params.outAdsPwr !== undefined || params.outTypec1Pwr !== undefined
+                        || params.outTypec2Pwr !== undefined || params.outUsb1Pwr !== undefined || params.outUsb2Pwr !== undefined)) {
+                        const dcOutPwr_mW = Math.round(((params.outAdsPwr ?? 0) + (params.outTypec1Pwr ?? 0) + (params.outTypec2Pwr ?? 0)
+                            + (params.outUsb1Pwr ?? 0) + (params.outUsb2Pwr ?? 0)) * 1000);
+                        await dcOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activePower', dcOutPwr_mW, endpoint.log);
+                    }
+
+                    // AC On/Off Switch
                     if (acSwitchOnOffSwitchEndpoint && params.showFlag !== undefined) {
                         const isOn = (params.showFlag & 0x04) !== 0;
                         await acSwitchOnOffSwitchEndpoint.setAttribute(OnOff.Cluster.id, 'onOff', isOn, endpoint.log);
                     }
 
-                    // DC On Off Switch
+                    // DC On/Off Switch
                     if (dcSwitchOnOffSwitchEndpoint && params.showFlag !== undefined) {
                         const isOn = (params.showFlag & 0x02) !== 0;
                         await dcSwitchOnOffSwitchEndpoint.setAttribute(OnOff.Cluster.id, 'onOff', isOn, endpoint.log);
@@ -269,12 +314,25 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
 
                     // AC Input Electrical Sensor: Voltage/Volts
                     if (acInputElectricalSensorEndpoint && params.inAc5p8Vol !== undefined && params.inAcC20Vol !== undefined) {
-                        const acInVol = params.inAc5p8Vol > 0 && params.inAcC20Vol > 0
-                            ? (params.inAc5p8Vol + params.inAcC20Vol) / 2
-                            : (params.inAc5p8Vol > 0 ? params.inAc5p8Vol : params.inAcC20Vol);
-                        const acInVol_mV = Math.round(acInVol * 1000);
+                        const acInVol = params.inAc5p8Vol > 0 && params.inAcC20Vol > 0 ? null : (params.inAc5p8Vol > 0 ? params.inAc5p8Vol : params.inAcC20Vol);
+                        const acInVol_mV = acInVol ? Math.round(acInVol * 1000) : null;
                         await acInputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'voltage', acInVol_mV, endpoint.log);
                     }
+
+                    // AC Output Electrical Sensor: Current/Amps
+                    // if (acOutputElectricalSensorEndpoint && params.outAc5p8Amp !== undefined && params.outAcL11Amp !== undefined && params.outAcL12Amp !== undefined
+                    //     && params.outAcL14Amp !== undefined && params.outAcL21Amp !== undefined && params.outAcL22Amp !== undefined && params.outAcTtAmp !== undefined) {
+                    //     const acOutAmp_mA = Math.round((params.outAc5p8Amp + params.outAcL11Amp + params.outAcL12Amp
+                    //         + params.outAcL14Amp + params.outAcL21Amp + params.outAcL22Amp + params.outAcTtAmp) * 1000);
+                    //     await acOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activeCurrent', acOutAmp_mA, endpoint.log);
+                    // }
+
+                    // DC Output Electrical Sensor: Current/Amps
+                    // if (dcOutputElectricalSensorEndpoint && params.outAdsAmp !== undefined && params.outTypec1Amp !== undefined && params.outTypec2Amp !== undefined
+                    //     && params.outUsb1Amp !== undefined && params.outUsb2Amp !== undefined) {
+                    //     const dcOutAmp_mA = Math.round((params.outAdsAmp + params.outTypec1Amp + params.outTypec2Amp + params.outUsb1Amp + params.outUsb2Amp) * 1000);
+                    //     await dcOutputElectricalSensorEndpoint.setAttribute(ElectricalPowerMeasurement.Cluster.id, 'activeCurrent', dcOutAmp_mA, endpoint.log);
+                    // }
 
                     break;
                 }

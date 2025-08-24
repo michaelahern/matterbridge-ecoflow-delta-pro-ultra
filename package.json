@@ -1,7 +1,7 @@
 {
   "name": "matterbridge-ecoflow-delta-pro-ultra",
   "displayName": "Matterbridge EcoFlow DELTA Pro Ultra",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "EcoFlow DELTA Pro Ultra Matterbridge Plugin",
   "keywords": [
     "ecoflow",
@@ -54,11 +54,11 @@
     "eslint-plugin-jsonc": "^2",
     "eslint-plugin-yml": "^1",
     "rimraf": "^6",
-    "typescript": "~5.8",
+    "typescript": "~5.9",
     "typescript-eslint": "^8"
   },
   "engines": {
-    "matterbridge": ">=3",
+    "matterbridge": ">=3.2.0",
     "node": ">=20"
   }
 }
