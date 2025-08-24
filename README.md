@@ -25,16 +25,20 @@ Field                | Description
 
 This plugin attempts to implement a Battery Storage device type for the EcoFlow DELTA Pro Ultra as defined in [Matter 1.4](https://csa-iot.org/newsroom/matter-1-4-enables-more-capable-smart-homes/). However, this device type is not yet supported in most smart home ecosystems and only a subset of functionality will be available.
 
-### Apple Home
+### [Apple Home](https://support.apple.com/en-us/102135)
 
-Supported Functionality: AC & DC On/Off Switches, Battery Status
+Supported Functionality: AC & DC On/Off Outlets, Battery Status
 
-![Apple Home: AC & DC On/Off Switches](./docs/apple1.png) ![Apple Home: Battery Status](./docs/apple2.png)
+![Apple Home: AC & DC On/Off Outlets](./docs/apple1.png) ![Apple Home: Battery Status](./docs/apple2.png)
 
-### Amazon Alexa
+### [Home Assistant](https://www.home-assistant.io/)
 
-TBD
+Supported Functionality: AC & DC On/Off Outlets, Battery Status
 
-### Home Assistant
+### [Amazon Alexa](https://developer.amazon.com/en-US/docs/alexa/smarthome/matter-support.html)
 
-TBD
+Unknown
+
+### [Google Home](https://developers.home.google.com/matter/supported-devices)
+
+Unknown
