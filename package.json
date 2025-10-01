@@ -42,7 +42,7 @@
   },
   "dependencies": {
     "@ecoflow-api/rest-client": "0.1.0",
-    "mqtt": "~5.13",
+    "mqtt": "~5.14",
     "zod": "^4"
   },
   "devDependencies": {
