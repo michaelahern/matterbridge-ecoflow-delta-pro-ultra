@@ -19,6 +19,4 @@ jobs:
       - run: npm install -g matterbridge
       - run: npm ci
       - run: npm link matterbridge
-      - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - run: npm publish
