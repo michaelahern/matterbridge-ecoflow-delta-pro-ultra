@@ -1,5 +1,5 @@
 import { RestClient } from '@ecoflow-api/rest-client';
-import { Matterbridge, MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, batteryStorage, deviceEnergyManagement, electricalSensor, onOffOutlet, powerSource } from 'matterbridge';
+import { MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, type PlatformMatterbridge, batteryStorage, deviceEnergyManagement, electricalSensor, onOffOutlet, powerSource } from 'matterbridge';
 import { DeviceEnergyManagement, ElectricalPowerMeasurement, OnOff, PowerSource } from 'matterbridge/matter/clusters';
 import { AnsiLogger } from 'matterbridge/logger';
 import { PowerSourceTag } from 'matterbridge/matter';
@@ -11,7 +11,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
     ecoflowRestClient?: RestClient;
     batteryStorageDevices = new Map<string, MatterbridgeEndpoint>();
 
-    constructor(matterbridge: Matterbridge, log: AnsiLogger, config: PlatformConfig) {
+    constructor(matterbridge: PlatformMatterbridge, log: AnsiLogger, config: PlatformConfig) {
         super(matterbridge, log, config);
 
         const accessKey = config.accessKey as string ?? process.env.ECOFLOW_ACCESS_KEY;
