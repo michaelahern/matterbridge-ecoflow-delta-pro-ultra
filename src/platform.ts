@@ -207,15 +207,15 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 return;
             }
 
-            const batteryPowerSourceEndpoint = endpoint.getChildEndpointByName('Battery');
-            const gridPowerSourceEndpoint = endpoint.getChildEndpointByName('Grid');
+            const batteryPowerSourceEndpoint = endpoint.getChildEndpointById('Battery');
+            const gridPowerSourceEndpoint = endpoint.getChildEndpointById('Grid');
 
-            const acInputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACInput');
-            const acOutputElectricalSensorEndpoint = endpoint.getChildEndpointByName('ACOutput');
-            const dcOutputElectricalSensorEndpoint = endpoint.getChildEndpointByName('DCOutput');
+            const acInputElectricalSensorEndpoint = endpoint.getChildEndpointById('ACInput');
+            const acOutputElectricalSensorEndpoint = endpoint.getChildEndpointById('ACOutput');
+            const dcOutputElectricalSensorEndpoint = endpoint.getChildEndpointById('DCOutput');
 
-            const acSwitchOnOffSwitchEndpoint = endpoint.getChildEndpointByName('ACSwitch');
-            const dcSwitchOnOffSwitchEndpoint = endpoint.getChildEndpointByName('DCSwitch');
+            const acSwitchOnOffSwitchEndpoint = endpoint.getChildEndpointById('ACSwitch');
+            const dcSwitchOnOffSwitchEndpoint = endpoint.getChildEndpointById('DCSwitch');
 
             const messageWrapper = mqttResponseBaseSchema.parse(JSON.parse(message.toString()));
             switch (messageWrapper.cmdId) {

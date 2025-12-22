@@ -1,7 +1,7 @@
 {
   "name": "matterbridge-ecoflow-delta-pro-ultra",
   "displayName": "Matterbridge EcoFlow DELTA Pro Ultra",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "EcoFlow DELTA Pro Ultra Matterbridge Plugin",
   "keywords": [
     "ecoflow",
@@ -41,7 +41,7 @@
     "prepublishOnly": "npm run build"
   },
   "dependencies": {
-    "@ecoflow-api/rest-client": "0.1.0",
+    "@ecoflow-api/rest-client": "0.3.0",
     "mqtt": "~5.14",
     "zod": "^4"
   },
