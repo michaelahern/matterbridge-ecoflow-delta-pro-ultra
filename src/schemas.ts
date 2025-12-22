@@ -3,13 +3,13 @@ import { z } from 'zod/v3';
 export const mqttResponseBaseSchema = z.object({
     cmdId: z.number().int(),
     cmdFunc: z.number().int(),
-    param: z.record(z.string(), z.any()).optional(),
+    params: z.record(z.string(), z.any()).optional(),
     addr: z.string()
 }).passthrough();
 
 // cmdId: 1,
 // cmdFunc: 2,
-// param: { ... },
+// params: { ... },
 // addr: 'hs_yj751_pd_appshow_addr'
 export const mqttResponseCmdId1Params = z.object({
     access5p8InType: z.number().int().optional(),
@@ -66,7 +66,7 @@ export const mqttResponseCmdId1Params = z.object({
 
 // cmdId: 2
 // cmdFunc: 2
-// param: { ... }
+// params: { ... }
 // addr: 'hs_yj751_pd_backend_addr'
 export const mqttResponseCmdId2Params = z.object({
     acOutFreq: z.number().int().optional(),
@@ -108,7 +108,7 @@ export const mqttResponseCmdId2Params = z.object({
 
 // cmdId: 3
 // cmdFunc: 2
-// param: { ... }
+// params: { ... }
 // addr: 'hs_yj751_pd_app_set_info_addr'
 export const mqttResponseCmdId3Params = z.object({
     acOftenOpenFlg: z.number().int().optional(),

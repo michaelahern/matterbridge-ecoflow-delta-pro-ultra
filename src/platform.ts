@@ -220,7 +220,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
             const messageWrapper = mqttResponseBaseSchema.parse(JSON.parse(message.toString()));
             switch (messageWrapper.cmdId) {
                 case 1: {
-                    const params = mqttResponseCmdId1Params.parse(messageWrapper.param);
+                    const params = mqttResponseCmdId1Params.parse(messageWrapper.params);
                     this.log.debug('MQTT Message', topic, messageWrapper.cmdId, messageWrapper.cmdFunc, params);
 
                     // Battery Power Source: Battery Percent Remaining & Charge Level
@@ -293,7 +293,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                     break;
                 }
                 case 2: {
-                    const params = mqttResponseCmdId2Params.parse(messageWrapper.param);
+                    const params = mqttResponseCmdId2Params.parse(messageWrapper.params);
                     this.log.debug('MQTT Message', topic, messageWrapper.cmdId, messageWrapper.cmdFunc, params);
 
                     // Battery Power Source: Battery Charging State
@@ -339,7 +339,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                     break;
                 }
                 case 3: {
-                    const params = mqttResponseCmdId3Params.parse(messageWrapper.param);
+                    const params = mqttResponseCmdId3Params.parse(messageWrapper.params);
                     this.log.debug('MQTT Message', topic, messageWrapper.cmdId, messageWrapper.cmdFunc, params);
                     break;
                 }
