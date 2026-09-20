@@ -1,5 +1,5 @@
 import { RestClient } from '@ecoflow-api/rest-client';
-import { MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, type PlatformMatterbridge, batteryStorage, deviceEnergyManagement, electricalSensor, onOffOutlet, powerSource } from 'matterbridge';
+import { MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, type PlatformMatterbridge, batteryStorage, deviceEnergyManagement, electricalSensor, onOffPlugInUnit, powerSource } from 'matterbridge';
 import { DeviceEnergyManagement, ElectricalPowerMeasurement, OnOff, PowerSource } from 'matterbridge/matter/clusters';
 import { AnsiLogger } from 'matterbridge/logger';
 import { PowerSourceTag } from 'matterbridge/matter';
@@ -105,7 +105,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
                 .addRequiredClusterServers();
 
             // AC On/Off Switch
-            const acSwitch = endpoint.addChildDeviceType('ACSwitch', [onOffOutlet, powerSource])
+            const acSwitch = endpoint.addChildDeviceType('ACSwitch', [onOffPlugInUnit, powerSource])
                 .createDefaultOnOffClusterServer()
                 .createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Ac)
                 .addRequiredClusterServers();
@@ -137,7 +137,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
             });
 
             // DC On/Off Switch
-            const dcSwitch = endpoint.addChildDeviceType('DCSwitch', [onOffOutlet, powerSource])
+            const dcSwitch = endpoint.addChildDeviceType('DCSwitch', [onOffPlugInUnit, powerSource])
                 .createDefaultOnOffClusterServer()
                 .createDefaultPowerSourceWiredClusterServer(PowerSource.WiredCurrentType.Dc)
                 .addRequiredClusterServers();
