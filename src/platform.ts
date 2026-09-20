@@ -1,14 +1,14 @@
-import { RestClient } from '@ecoflow-api/rest-client';
 import { MatterbridgeEndpoint, MatterbridgeDynamicPlatform, type PlatformConfig, type PlatformMatterbridge, batteryStorage, deviceEnergyManagement, electricalSensor, onOffPlugInUnit, powerSource } from 'matterbridge';
 import { DeviceEnergyManagement, ElectricalPowerMeasurement, OnOff, PowerSource } from 'matterbridge/matter/clusters';
 import { AnsiLogger } from 'matterbridge/logger';
 import { PowerSourceTag } from 'matterbridge/matter';
 import mqtt from 'mqtt';
 
+import { EcoflowRestClient } from './ecoflow-rest-client.js';
 import { mqttResponseBaseSchema, mqttResponseCmdId1Params, mqttResponseCmdId2Params, mqttResponseCmdId3Params, restAllQuotaData } from './schemas.js';
 
 export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
-    ecoflowRestClient?: RestClient;
+    ecoflowRestClient?: EcoflowRestClient;
     batteryStorageDevices = new Map<string, MatterbridgeEndpoint>();
 
     constructor(matterbridge: PlatformMatterbridge, log: AnsiLogger, config: PlatformConfig) {
@@ -26,7 +26,7 @@ export class EcoflowDeltaProUltraPlatform extends MatterbridgeDynamicPlatform {
             config.accessKey = accessKey;
             config.secretKey = secretKey;
 
-            this.ecoflowRestClient = new RestClient({
+            this.ecoflowRestClient = new EcoflowRestClient({
                 accessKey: accessKey,
                 secretKey: secretKey,
                 host: 'https://api-a.ecoflow.com'
